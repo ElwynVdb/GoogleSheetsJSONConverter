@@ -6,8 +6,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class Utils
-{
+public class Utils {
     public static String getJsonFromURL(String url) {
 
         try {
@@ -16,9 +15,9 @@ public class Utils
             String line = bufferedReaderToString(reader);
             return line;
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            System.out.println("Please define a valid URL");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Please define a valid URL");
         }
 
         return null;
@@ -28,7 +27,7 @@ public class Utils
         StringBuilder builder = new StringBuilder();
         String line = "";
 
-        try{
+        try {
             while ((line = e.readLine()) != null) {
                 builder.append(line);
             }

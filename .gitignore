@@ -21,6 +21,7 @@
 
 
 .libs
+out
 .idea
 gradle
 ./output.json
