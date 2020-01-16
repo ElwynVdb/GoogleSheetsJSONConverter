@@ -27,7 +27,7 @@ Meaning the conversion will look like :
 
 ![Publish](https://imgur.com/NRlxJsM.png)
 
-- Then click "Start publishing"
+- Then open "Published content & settings" and click "Start publishing"
 
 ![PublishWeb](https://imgur.com/NIuBID6.png)
 
