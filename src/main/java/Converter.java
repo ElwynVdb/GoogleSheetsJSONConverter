@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import util.SpreadSheet;
 import util.Utils;
 
+import javax.swing.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,15 +18,11 @@ import java.util.List;
 public class Converter {
 
     public static Gson GSON = new Gson().newBuilder().setPrettyPrinting().create();
-    public static Type type = new TypeToken<List<String>>() {
-    }.getType();
-
-    public static String test = "https://spreadsheets.google.com/feeds/cells/1cV4oC5UBpAh5UfLfMfVZBKHL9Pfc8szSUP0Ai4Nw0Z0/1/public/full?alt=json";
 
     public static void main(String[] args) {
-        //  String url = JOptionPane.showInputDialog(null, "Enter url", "Sheets to nice JSON", JOptionPane.OK_OPTION);
+          String url = JOptionPane.showInputDialog(null, "Enter url", "Sheets to nice JSON", JOptionPane.OK_OPTION);
 
-        System.out.println(convert(Utils.getJsonFromURL(test)));
+        System.out.println(convert(Utils.getJsonFromURL(url)));
     }
 
     public static String convert(String json) {
