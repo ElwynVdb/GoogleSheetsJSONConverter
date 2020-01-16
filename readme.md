@@ -23,22 +23,22 @@ Meaning the conversion will look like :
 
 # How to convert ?
 
-Go to your spreadsheet open the tab "File" and select "Publish to the web"
+- Go to your spreadsheet open the tab "File" and select "Publish to the web"
 
 ![Publish](https://imgur.com/NRlxJsM.png)
 
-Then click "Start publishing"
+- Then click "Start publishing"
 
 ![PublishWeb](https://imgur.com/NIuBID6.png)
 
-Now to convert it to a json you will need to copy a part of your spreadsheet URL
+- Now to convert it to a json you will need to copy a part of your spreadsheet URL
 
 Your url will roughly look like this, copy the part where "SheetID" is in this example:
 ```sh
 https://docs.google.com/spreadsheets/d/"SheetID"/edit#gid=0
 ```
 
-Now open the jar file and put this into the text box and press "OK"
+- Now open the jar file and put this into the text box and press "OK"
 
 ![Input](https://imgur.com/E05945k.png)
 
