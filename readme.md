@@ -27,7 +27,7 @@ Go to your spreadsheet open the tab "File" and select "Publish to the web"
 
 ![Publish](https://imgur.com/NRlxJsM.png)
 
-Then click "Publish"
+Then click "Start publishing"
 
 ![PublishWeb](https://imgur.com/NIuBID6.png)
 
