@@ -1,5 +1,7 @@
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import util.SpreadSheet;
 import util.Utils;
@@ -18,12 +20,12 @@ public class Converter {
     public static Gson GSON = new Gson().newBuilder().setPrettyPrinting().create();
 
     public static void main(String[] args) {
-        String url = JOptionPane.showInputDialog(null, "Enter url", "Sheets to nice JSON", JOptionPane.OK_OPTION);
+        String id = JOptionPane.showInputDialog(null, "Enter SheetID", "Sheets to JSON", JOptionPane.OK_OPTION);
 
-        if (url != null)
-            System.out.println(convert(Utils.getJsonFromURL(url)));
+        if (id != null)
+            System.out.println(convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + id + "/1/public/full?alt=json")));
         else
-            System.out.println("Please provide an URL");
+            System.out.println("Please provide a valid SheetID");
     }
 
     /**
@@ -34,37 +36,42 @@ public class Converter {
      */
     public static String convert(String json) {
         if (json != null) {
+            try {
+                SpreadSheet sheet = GSON.fromJson(json, SpreadSheet.class);
+                List<String> fields = getFieldNames(sheet);
+                int checkvalue = (sheet.feed.entry[sheet.feed.entry.length - 1].gs$cell.row) * fields.size();
 
-            SpreadSheet sheet = GSON.fromJson(json, SpreadSheet.class);
-            List<String> fields = getFieldNames(sheet);
-            int checkvalue = (sheet.feed.entry[sheet.feed.entry.length - 1].gs$cell.row) * fields.size();
-
-            if (checkvalue > sheet.feed.entry.length) {
-                sheet = fixEmptyFields(fields.size(), sheet, sheet.feed.entry[sheet.feed.entry.length - 1].gs$cell.row);
-            }
-
-            List<SpreadSheet.Entry> entries = Arrays.asList(sheet.feed.entry);
-            JSONArray object = new JSONArray();
-
-            for (int x = 0; x < (sheet.feed.entry.length / fields.size()); x++) {
-                JSONObject jsonObject = new JSONObject();
-
-                if (x == 0) continue;
-
-                for (int i = 0; i < fields.size(); i++) {
-                    int selection = (x * fields.size()) + i;
-                    String field = fields.get(i);
-
-                    jsonObject.put(field, entries.get(selection).gs$cell.$t);
+                if (checkvalue > sheet.feed.entry.length) {
+                    sheet = fixEmptyFields(fields.size(), sheet, sheet.feed.entry[sheet.feed.entry.length - 1].gs$cell.row);
                 }
 
-                object.put(jsonObject);
-            }
+                List<SpreadSheet.Entry> entries = Arrays.asList(sheet.feed.entry);
+                JSONArray object = new JSONArray();
 
-            return object.toString();
+                for (int x = 0; x < (sheet.feed.entry.length / fields.size()); x++) {
+                    JSONObject jsonObject = new JSONObject();
+
+                    if (x == 0) continue;
+
+                    for (int i = 0; i < fields.size(); i++) {
+                        int selection = (x * fields.size()) + i;
+                        String field = fields.get(i);
+
+                        jsonObject.put(field, entries.get(selection).gs$cell.$t);
+                    }
+
+                    object.put(jsonObject);
+                }
+
+                return object.toString();
+
+            } catch (JsonSyntaxException e) {
+            } catch (JSONException e) {
+
+            }
         }
 
-        return "Couldn't convert";
+        return "Couldn't convert, Is the Spreadsheet published?";
     }
 
     /**
