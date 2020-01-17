@@ -54,5 +54,6 @@ The project will automaticly create the following file in the directory:
 
 This project was inspired by this image from Google Sheets API:
 
-![Input](https://imgur.com/a/J0Piaho.png)
+
+![Inspired](https://imgur.com/F0VRwBz.png)
  
