@@ -44,4 +44,15 @@ https://docs.google.com/spreadsheets/d/"SheetID"/edit#gid=0
 
 # Output
 
-// Coming
+The project will automaticly create the following file in the directory:
+```json
+"output.json"
+```
+
+
+# Information
+
+This project was inspired by this image from Google Sheets API:
+
+![Input](https://imgur.com/a/J0Piaho.png)
+ 

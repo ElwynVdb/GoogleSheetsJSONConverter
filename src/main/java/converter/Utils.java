@@ -1,8 +1,6 @@
-package util;
+package converter;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -36,5 +34,19 @@ public class Utils {
         }
 
         return builder.toString();
+    }
+
+    public static void writeToFile(Object object) {
+        try {
+            File f = new File("output.json");
+
+            if (!f.exists()) f.createNewFile();
+
+            FileWriter writer = new FileWriter(f);
+            writer.write((String) object);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

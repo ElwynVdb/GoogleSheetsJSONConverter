@@ -1,10 +1,11 @@
+package converter;
+
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonSyntaxException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import util.SpreadSheet;
-import util.Utils;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class Converter {
         String spreadsheetID = JOptionPane.showInputDialog(null, "Enter SpreadSheetID", "Spreadsheet to JSON", JOptionPane.OK_OPTION);
 
         if (spreadsheetID != null)
-            System.out.println(convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json")));
+           Utils.writeToFile(convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json")));
         else
             System.out.println("Please provide a valid SheetID");
     }
@@ -63,8 +64,7 @@ public class Converter {
                     array.put(jsonObject);
                 }
 
-                return array.toString();
-
+                return array.toString(2);
             } catch (JsonSyntaxException e) {
             } catch (JSONException e) {
             }
@@ -83,6 +83,9 @@ public class Converter {
         List<String> keys = new ArrayList<>();
 
         for (SpreadSheet.Entry entry : sheet.feed.entry) {
+
+            // TODO fill empty keys in first row (so like if it skips a col num)
+            // TODO doesn't need to check for col "1" anyways as it's just row 1
 
             if (entry.gs$cell.row > 1) break;
 
