@@ -1,7 +1,6 @@
 package converter;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonSyntaxException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,10 +22,15 @@ public class Converter {
     public static void main(String[] args) {
         String spreadsheetID = JOptionPane.showInputDialog(null, "Enter SpreadSheetID", "Spreadsheet to JSON", JOptionPane.OK_OPTION);
 
-        if (spreadsheetID != null)
-           Utils.writeToFile(convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json")));
-        else
+        if (spreadsheetID != null) {
+            Utils.writeToFile(convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json"), JSONType.VALUE));
+        } else {
             System.out.println("Please provide a valid SheetID");
+        }
+    }
+
+    public static String convertToJSON(int spreadsheetID, JSONType type) {
+        return convert(Utils.getJsonFromURL(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json")), type);
     }
 
     /**
@@ -68,6 +72,51 @@ public class Converter {
             } catch (JsonSyntaxException e) {
             } catch (JSONException e) {
             }
+        }
+
+        return "Couldn't convert, Is the Spreadsheet published?";
+    }
+
+    public static String convert(String json, JSONType type) {
+        if (json != null) {
+
+            if (type == JSONType.VALUE) {
+                return convert(json);
+            }
+
+            if (type == JSONType.ARRAY) {
+                SpreadSheet spreadSheet = GSON.fromJson(json, SpreadSheet.class);
+                List<SpreadSheet.Entry> entries = Arrays.asList(spreadSheet.feed.entry);
+                ArrayList<String> strings = new ArrayList<>();
+                ArrayList<SpreadSheet.Entry> passed = new ArrayList<>();
+                boolean finished = false;
+                int passedCol = 0;
+
+                while (!finished) {
+
+                    for (int x = 0; x < entries.size(); x++) {
+                        SpreadSheet.Entry entry = entries.get(x);
+                        int col = entry.gs$cell.col;
+
+                        if (passedCol != col) continue;
+
+                        if (!passed.contains(entry)) {
+                            strings.add(entry.gs$cell.$t);
+                            passed.add(entry);
+                        }
+                    }
+
+                    if (entries.size() == passed.size()) {
+                        finished = true;
+                    }
+
+                    passedCol++;
+                }
+
+                String[] list = strings.toArray(new String[strings.size()]);
+                return GSON.toJson(list);
+            }
+
         }
 
         return "Couldn't convert, Is the Spreadsheet published?";
@@ -145,5 +194,9 @@ public class Converter {
         }
 
         return newsheet;
+    }
+
+    public enum JSONType {
+        VALUE, ARRAY;
     }
 }
