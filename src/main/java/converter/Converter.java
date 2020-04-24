@@ -137,9 +137,6 @@ public class Converter {
 
         for (SpreadSheet.Entry entry : sheet.feed.entry) {
 
-            // TODO fill empty keys in first row (so like if it skips a col num)
-            // TODO doesn't need to check for col "1" anyways as it's just row 1
-
             if (entry.gs$cell.row > 1) break;
 
             keys.add(entry.gs$cell.$t);
