@@ -188,7 +188,7 @@ public class Converter {
 
             if (!validValues.contains(i)) {
                 SpreadSheet.Entry entry1 = newEntry[i];
-                entry1.gs$cell.col = (i - (i / fieldAmount * fieldAmount)) + 1;
+                entry1.gs$cell.col = (i - (i / (fieldAmount * fieldAmount))) + 1;
                 entry1.gs$cell.row = i / fieldAmount;
                 entry1.gs$cell.$t = "Empty";
             }
