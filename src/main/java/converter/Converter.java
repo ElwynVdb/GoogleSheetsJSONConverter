@@ -33,6 +33,9 @@ public class Converter {
         }
     }
 
+    /**
+     * External Conversions
+     */
     public static String convertToJSON(String spreadsheetID, JSONType type) {
         return convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json"), type);
     }
