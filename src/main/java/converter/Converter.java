@@ -19,18 +19,22 @@ public class Converter {
 
     public static Gson GSON = new Gson().newBuilder().setPrettyPrinting().create();
 
+    public Converter() {
+
+    }
+
     public static void main(String[] args) {
         String spreadsheetID = JOptionPane.showInputDialog(null, "Enter SpreadSheetID", "Spreadsheet to JSON", JOptionPane.OK_OPTION);
 
         if (spreadsheetID != null) {
-            Utils.writeToFile(convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json"), JSONType.VALUE));
+            Utils.writeToFile(Converter.convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json"), JSONType.VALUE));
         } else {
             System.out.println("Please provide a valid SheetID");
         }
     }
 
-    public static String convertToJSON(int spreadsheetID, JSONType type) {
-        return convert(Utils.getJsonFromURL(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json")), type);
+    public static String convertToJSON(String spreadsheetID, JSONType type) {
+        return convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json"), type);
     }
 
     /**
