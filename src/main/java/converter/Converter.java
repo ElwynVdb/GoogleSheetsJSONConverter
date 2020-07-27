@@ -87,10 +87,12 @@ public class Converter {
     public static String convert(String json, JSONType type) {
         if (json != null) {
 
+            // Get Key, Value output (First row are keys)
             if (type == JSONType.VALUE) {
                 return convert(json);
             }
 
+            // Get Array Output (All Fields are values)
             if (type == JSONType.ARRAY) {
                 SpreadSheet spreadSheet = GSON.fromJson(json, SpreadSheet.class);
                 List<SpreadSheet.Entry> entries = Arrays.asList(spreadSheet.feed.entry);
@@ -105,6 +107,7 @@ public class Converter {
                         SpreadSheet.Entry entry = entries.get(x);
                         int col = entry.gs$cell.col;
 
+                        // Check if field is in right collumn
                         if (passedCol != col) continue;
 
                         if (!passed.contains(entry)) {
@@ -123,7 +126,6 @@ public class Converter {
                 String[] list = strings.toArray(new String[strings.size()]);
                 return GSON.toJson(list);
             }
-
         }
 
         return "Couldn't convert, Is the Spreadsheet published?";
@@ -140,6 +142,7 @@ public class Converter {
 
         for (SpreadSheet.Entry entry : sheet.feed.entry) {
 
+            // Don't continue if it's not first row
             if (entry.gs$cell.row > 1) break;
 
             keys.add(entry.gs$cell.$t);
