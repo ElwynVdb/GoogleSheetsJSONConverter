@@ -41,6 +41,13 @@ public class Converter {
     }
 
     /**
+     * External Conversions with page selection
+     */
+    public static String convertToJSONPage(String spreadsheetID, JSONType type) {
+        return convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/public/full?alt=json"), type);
+    }
+
+    /**
      * Convert Google Sheets API Json to clean JSON
      *
      * @param json
@@ -204,6 +211,6 @@ public class Converter {
     }
 
     public enum JSONType {
-        VALUE, ARRAY;
+        VALUE, ARRAY
     }
 }
