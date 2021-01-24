@@ -70,7 +70,7 @@ public class Converter {
                 for (int x = 0; x < (spreadSheet.feed.entry.length / keys.size()); x++) {
                     JSONObject jsonObject = new JSONObject();
 
-                    if (x == 0) continue;
+                    if (x == 0) continue; // Ingore keys
 
                     for (int i = 0; i < keys.size(); i++) {
                         int selection = (x * keys.size()) + i;
@@ -149,8 +149,7 @@ public class Converter {
 
         for (SpreadSheet.Entry entry : sheet.feed.entry) {
 
-            // Don't continue if it's not first row
-            if (entry.gs$cell.row > 1) break;
+            if (entry.gs$cell.row > 1) break; // Don't continue if it's not first row
 
             keys.add(entry.gs$cell.$t);
         }
@@ -178,9 +177,9 @@ public class Converter {
 
 
         // Initialize all values
-        for (int a = 0; a < max; a++) {
-            newEntry[a] = new SpreadSheet.Entry();
-            newEntry[a].gs$cell = new SpreadSheet.Cell();
+        for (int x = 0; x < max; x++) {
+            newEntry[x] = new SpreadSheet.Entry();
+            newEntry[x].gs$cell = new SpreadSheet.Cell();
         }
 
         // Put everything into new Array at their required location
@@ -197,12 +196,12 @@ public class Converter {
         }
 
         // Fill in the empty values in array with "Empty"
-        for (int i = 0; i < max; i++) {
+        for (int x = 0; x < max; x++) {
 
-            if (!validValues.contains(i)) {
-                SpreadSheet.Entry entry1 = newEntry[i];
-                entry1.gs$cell.col = (i - (i / (fieldAmount * fieldAmount))) + 1;
-                entry1.gs$cell.row = i / fieldAmount;
+            if (!validValues.contains(x)) {
+                SpreadSheet.Entry entry1 = newEntry[x];
+                entry1.gs$cell.col = (x - (x / (fieldAmount * fieldAmount))) + 1;
+                entry1.gs$cell.row = x / fieldAmount;
                 entry1.gs$cell.$t = "Empty";
             }
         }
