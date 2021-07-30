@@ -73,6 +73,6 @@ public class SpreadSheet {
     }
 
     public static SpreadSheet getFromJson(String json) {
-        return ConverterRewrite.getGSON().fromJson(json, SpreadSheet.class);
+        return Converter.getGSON().fromJson(json, SpreadSheet.class);
     }
 }

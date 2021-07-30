@@ -1,210 +1,186 @@
 package com.josia.converter;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.GsonBuilder;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-/**
- * Author : Josia50
- * Finished on : 16/01/2020
- */
+/** @author Josia */
 public class Converter {
 
-    public static Gson GSON = new Gson().newBuilder().setPrettyPrinting().create();
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static void main(String[] args) {
-        String spreadsheetID = JOptionPane.showInputDialog(null, "Enter SpreadSheetID", "Spreadsheet to JSON", JOptionPane.OK_OPTION);
+        String spreadSheetID = displayInputScreen();
 
-        if (spreadsheetID != null) {
-            Utils.writeToFile(Converter.convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json"), JSONReturnType.VALUE));
-        } else {
-            System.out.println("Please provide a valid SheetID");
+        if (spreadSheetID == null || spreadSheetID.length() == 0) {
+            displayErrorScreen("You have entered the wrong spreadsheetID", "Invalid spreadsheetID");
+            return;
+        }
+
+        JSONArray finalJsonResult = getJSONArrayFromSpreadSheet(spreadSheetID, 1, JSONReturnType.VALUE);
+
+        if (finalJsonResult == null || finalJsonResult.length() == 0) {
+            displayErrorScreen("This spreadsheet returned nothing", "Invalid spreadsheet");
+            return;
+        }
+
+        Utils.writeToFile(finalJsonResult.toString(2));
+    }
+
+    public static JSONArray getJSONArrayFromSpreadSheet(String spreadsheetID, int page, JSONReturnType jsonReturnType){
+        String rawSpreadsheetJson = Utils.getJsonFromURL(Utils.createSpreadSheetUrl(spreadsheetID, page));
+        return Converter.convertSpreadsheetToJson(rawSpreadsheetJson, jsonReturnType);
+    }
+
+    private static JSONArray convertSpreadsheetToJson(String rawSpreadsheetJson, JSONReturnType jsonReturnType) {
+
+        SpreadSheet spreadSheet = SpreadSheet.getFromJson(rawSpreadsheetJson);
+
+        if (spreadSheet == null) {
+            displayErrorScreen("You have entered the wrong spreadsheetID", "Invalid spreadsheetID");
+            return null;
+        }
+
+        switch (jsonReturnType) {
+            default:
+            case VALUE:
+                return createValueJson(spreadSheet);
+            case HORIZOONTAL_ARRAY:
+                return createHorizontalJsonArray(spreadSheet);
+            case VERTICAL_ARRAY:
+                return createVerticalJsonArray(spreadSheet);
         }
     }
 
-    /**
-     * External Conversions
-     */
-    public static String convertToJSON(String spreadsheetID, JSONReturnType type) {
-        return convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json"), type);
+    private static JSONArray createValueJson(SpreadSheet spreadSheet) {
+        List<String> keys = getKeys(spreadSheet);
+        SpreadSheet.Cell finalCell = spreadSheet.getFeed().getEntry()[spreadSheet.getFeed().getEntry().length - 1].getCell();
+        int finalRow = finalCell.getRow();
+        int totalCellCount = keys.size() * finalRow;
+
+        spreadSheet = fixEmptyFields(keys, totalCellCount, spreadSheet);
+
+        JSONArray jsonArray = new JSONArray();
+
+        for (int i = 0; i < (totalCellCount / keys.size()); i++) {
+            if (i == 0) continue; // Ignore keys
+
+            JSONObject jsonObject = new JSONObject();
+
+            for (int j = 0; j < keys.size(); j++) {
+                String key = keys.get(j);
+                String content = spreadSheet.getFeed().getEntry()[(i * keys.size()) + j].getCell().getContent();
+
+                jsonObject.put(key, content);
+            }
+
+            jsonArray.put(jsonObject);
+        }
+
+        return jsonArray;
     }
 
-    /**
-     * External Conversions with page selection
-     */
-    public static String convertToJSONPage(String spreadsheetID, JSONReturnType type) {
-        return convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/public/full?alt=json"), type);
-    }
+    private static SpreadSheet fixEmptyFields(List<String> keys, int totalCellCount, SpreadSheet oldSheet) {
+        SpreadSheet newSheet = oldSheet;
+        SpreadSheet.Feed feed = oldSheet.getFeed();
 
-    /**
-     * Convert Google Sheets API Json to clean JSON
-     *
-     * @param json
-     * @return
-     */
-    public static String convert(String json) {
-        if (json != null) {
-            try {
-                SpreadSheet spreadSheet = GSON.fromJson(json, SpreadSheet.class);
-                List<String> keys = getKeys(spreadSheet);
-                int checkvalue = (spreadSheet.getFeed().getEntry()[spreadSheet.getFeed().getEntry().length - 1].getCell().getRow()) * keys.size();
+        if (totalCellCount > feed.getEntry().length) {
+            newSheet = new SpreadSheet();
+            newSheet.getFeed().setEntry(new SpreadSheet.Entry[totalCellCount]);
+            SpreadSheet.Entry[] newEntry = newSheet.getFeed().getEntry();
 
-                if (checkvalue > spreadSheet.getFeed().getEntry().length) {
-                    spreadSheet = fixEmptyFields(keys.size(), spreadSheet, spreadSheet.getFeed().getEntry()[spreadSheet.getFeed().getEntry().length - 1].getCell().getRow());
-                }
+            // Initialize
+            for (int x = 0; x < totalCellCount; x++) {
+                newEntry[x] = new SpreadSheet.Entry();
+                newEntry[x].setCell(new SpreadSheet.Cell());
+            }
 
-                List<SpreadSheet.Entry> entries = Arrays.asList(spreadSheet.getFeed().getEntry());
-                JSONArray array = new JSONArray();
+            List<Integer> validPositions = new ArrayList<>();
 
-                for (int x = 0; x < (spreadSheet.getFeed().getEntry().length / keys.size()); x++) {
-                    JSONObject jsonObject = new JSONObject();
+            for (SpreadSheet.Entry entry : feed.getEntry()) {
+                SpreadSheet.Cell cell = entry.getCell();
+                int placementPosition = (keys.size() * (cell.getRow() - 1)) + (cell.getColumn() - 1);
+                validPositions.add(placementPosition);
+                newEntry[placementPosition].getCell().copyCell(cell);
+            }
 
-                    if (x == 0) continue; // Ignore keys
+            SpreadSheet.Cell emptyCell = new SpreadSheet.Cell();
+            emptyCell.setContent("Empty");
 
-                    for (int i = 0; i < keys.size(); i++) {
-                        int selection = (x * keys.size()) + i;
-                        String key = keys.get(i);
+            for (int j = 0; j < totalCellCount; j++) {
+                if (validPositions.contains(j)) continue;
 
-                        jsonObject.put(key, entries.get(selection).getCell().getContent());
-                    }
+                SpreadSheet.Cell cell = newEntry[j].getCell();
 
-                    array.put(jsonObject);
-                }
-
-                return array.toString(2);
-            } catch (JsonSyntaxException | JSONException e) {
+                cell.copyCell(emptyCell);
+                cell.setRow(j / keys.size());
+                cell.setColumn(j - (j / keys.size()));
             }
         }
 
-        return "Couldn't convert, Is the Spreadsheet published?";
+        return newSheet;
     }
 
-    public static String convert(String json, JSONReturnType type) {
-        if (json != null) {
-
-            // Get Key, Value output (First row are keys)
-            if (type == JSONReturnType.VALUE) {
-                return convert(json);
-            }
-
-            // Get Array Output (All Fields are values)
-            if (type == JSONReturnType.VERTICAL_ARRAY) {
-                SpreadSheet spreadSheet = GSON.fromJson(json, SpreadSheet.class);
-                List<SpreadSheet.Entry> entries = Arrays.asList(spreadSheet.getFeed().getEntry());
-                ArrayList<String> strings = new ArrayList<>();
-                ArrayList<SpreadSheet.Entry> passed = new ArrayList<>();
-                boolean finished = false;
-                int passedCol = 0;
-
-                while (!finished) {
-
-                    for (int x = 0; x < entries.size(); x++) {
-                        SpreadSheet.Entry entry = entries.get(x);
-                        int col = entry.getCell().getColumn();
-
-                        // Check if field is in right collumn
-                        if (passedCol != col) continue;
-
-                        if (!passed.contains(entry)) {
-                            strings.add(entry.getCell().getContent());
-                            passed.add(entry);
-                        }
-                    }
-
-                    if (entries.size() == passed.size()) {
-                        finished = true;
-                    }
-
-                    passedCol++;
-                }
-
-                String[] list = strings.toArray(new String[strings.size()]);
-                return GSON.toJson(list);
-            }
-        }
-
-        return "Couldn't convert, Is the Spreadsheet published?";
-    }
-
-    /**
-     * Get first row values
-     *
-     * @param sheet
-     * @return List<String>
-     */
-    public static List<String> getKeys(SpreadSheet sheet) {
+    private static List<String> getKeys(SpreadSheet spreadSheet) {
         List<String> keys = new ArrayList<>();
 
-        for (SpreadSheet.Entry entry : sheet.getFeed().getEntry()) {
-
-            if (entry.getCell().getRow() > 1) break; // Don't continue if it's not first row
-
-            keys.add(entry.getCell().getContent());
+        for (SpreadSheet.Entry e : spreadSheet.getFeed().getEntry()) {
+            if (e.getCell().getRow() != 1) break;
+            keys.add(e.getCell().getContent());
         }
 
         return keys;
     }
 
-    /**
-     * Fix any empty fields (Prevent JSON writing to mess up)
-     *
-     * @param fieldAmount
-     * @param spreadSheet
-     * @param rowsMax
-     * @return
-     */
-    public static SpreadSheet fixEmptyFields(int fieldAmount, SpreadSheet spreadSheet, int rowsMax) {
+    private static JSONArray createVerticalJsonArray(SpreadSheet spreadSheet) {
+        JSONArray array = new JSONArray();
+        int entryCount = spreadSheet.getFeed().getEntry().length;
+        int column = 0;
 
-        int max = fieldAmount * rowsMax;
-        List<Integer> validValues = new ArrayList<>();
-        SpreadSheet.Entry[] entries = spreadSheet.getFeed().getEntry();
+        while (array.length() != entryCount) {
 
-        SpreadSheet newsheet = new SpreadSheet();
-        newsheet.getFeed().setEntry(new SpreadSheet.Entry[max]);
-        SpreadSheet.Entry[] newEntry = newsheet.getFeed().getEntry();
+            for (SpreadSheet.Entry entry : spreadSheet.getFeed().getEntry()) {
+                SpreadSheet.Cell cell = entry.getCell();
 
-        // Initialize all values
-        for (int x = 0; x < max; x++) {
-            newEntry[x] = new SpreadSheet.Entry();
-            newEntry[x].setCell(new SpreadSheet.Cell());
+                if (cell.getColumn() != column) continue;
+
+                array.put(entry.getCell().getContent());
+            }
+
+            column++;
         }
 
-        // Put everything into new Array at their required location
-        for (int x = 0; x < entries.length; x++) {
+        return array;
+    }
 
-            SpreadSheet.Entry entry = entries[x];
-            int selection = ((entry.getCell().getRow() - 1) * fieldAmount) + (entry.getCell().getColumn() - 1);
-            validValues.add(selection);
-            SpreadSheet.Entry entry1 = newEntry[selection];
+    private static JSONArray createHorizontalJsonArray(SpreadSheet spreadSheet) {
+        JSONArray array = new JSONArray();
 
-            SpreadSheet.Cell oldCell = entry.getCell();
-            SpreadSheet.Cell newCell = entry1.getCell();
+        for (SpreadSheet.Entry entry : spreadSheet.getFeed().getEntry()) {
+            String content = entry.getCell().getContent();
 
-            newCell.setColumn(oldCell.getColumn());
-            newCell.setRow(oldCell.getRow());
-            newCell.setContent(oldCell.getContent());
-        }
-
-        // Fill in the empty values in array with "Empty"
-        for (int x = 0; x < max; x++) {
-
-            if (!validValues.contains(x)) {
-                SpreadSheet.Entry entry1 = newEntry[x];
-                SpreadSheet.Cell emptyCell = entry1.getCell();
-
-                emptyCell.setColumn((x - (x / (fieldAmount * fieldAmount))) + 1);
-                emptyCell.setRow(x / fieldAmount);
-                emptyCell.setContent("Empty");
+            if (content != null && content.length() > 0) {
+                array.put(content);
             }
         }
 
-        return newsheet;
+        return array;
+    }
+
+    private static String displayInputScreen() {
+        return JOptionPane.showInputDialog(null, "Enter spreadSheetID", "Spreadsheet to JSON", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private static void displayErrorScreen(Object message, String title) {
+        JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static Gson getGSON() {
+        return GSON;
     }
 }
