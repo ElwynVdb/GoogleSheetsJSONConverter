@@ -1,8 +1,8 @@
-package converter;
+package com.josia.converter;
 
 public class SpreadSheet {
 
-    private Feed feed;
+    private final Feed feed;
 
     public SpreadSheet() {
         feed = new Feed();
@@ -37,7 +37,6 @@ public class SpreadSheet {
         private int col;
         private String $t;
 
-
         public void setContent(String $t) {
             this.$t = $t;
         }
@@ -61,9 +60,19 @@ public class SpreadSheet {
         public String getContent() {
             return $t;
         }
+
+        public void copyCell(Cell cell) {
+            setColumn(cell.getColumn());
+            setRow(cell.getRow());
+            setContent(cell.getContent());
+        }
     }
 
     public Feed getFeed() {
         return feed;
+    }
+
+    public static SpreadSheet getFromJson(String json) {
+        return ConverterRewrite.getGSON().fromJson(json, SpreadSheet.class);
     }
 }

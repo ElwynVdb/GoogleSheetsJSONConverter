@@ -1,4 +1,4 @@
-package converter;
+package com.josia.converter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -23,7 +23,7 @@ public class Converter {
         String spreadsheetID = JOptionPane.showInputDialog(null, "Enter SpreadSheetID", "Spreadsheet to JSON", JOptionPane.OK_OPTION);
 
         if (spreadsheetID != null) {
-            Utils.writeToFile(Converter.convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json"), JSONType.VALUE));
+            Utils.writeToFile(Converter.convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json"), JSONReturnType.VALUE));
         } else {
             System.out.println("Please provide a valid SheetID");
         }
@@ -32,14 +32,14 @@ public class Converter {
     /**
      * External Conversions
      */
-    public static String convertToJSON(String spreadsheetID, JSONType type) {
+    public static String convertToJSON(String spreadsheetID, JSONReturnType type) {
         return convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/1/public/full?alt=json"), type);
     }
 
     /**
      * External Conversions with page selection
      */
-    public static String convertToJSONPage(String spreadsheetID, JSONType type) {
+    public static String convertToJSONPage(String spreadsheetID, JSONReturnType type) {
         return convert(Utils.getJsonFromURL("https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/public/full?alt=json"), type);
     }
 
@@ -66,7 +66,7 @@ public class Converter {
                 for (int x = 0; x < (spreadSheet.getFeed().getEntry().length / keys.size()); x++) {
                     JSONObject jsonObject = new JSONObject();
 
-                    if (x == 0) continue; // Ingore keys
+                    if (x == 0) continue; // Ignore keys
 
                     for (int i = 0; i < keys.size(); i++) {
                         int selection = (x * keys.size()) + i;
@@ -79,24 +79,23 @@ public class Converter {
                 }
 
                 return array.toString(2);
-            } catch (JsonSyntaxException e) {
-            } catch (JSONException e) {
+            } catch (JsonSyntaxException | JSONException e) {
             }
         }
 
         return "Couldn't convert, Is the Spreadsheet published?";
     }
 
-    public static String convert(String json, JSONType type) {
+    public static String convert(String json, JSONReturnType type) {
         if (json != null) {
 
             // Get Key, Value output (First row are keys)
-            if (type == JSONType.VALUE) {
+            if (type == JSONReturnType.VALUE) {
                 return convert(json);
             }
 
             // Get Array Output (All Fields are values)
-            if (type == JSONType.ARRAY) {
+            if (type == JSONReturnType.VERTICAL_ARRAY) {
                 SpreadSheet spreadSheet = GSON.fromJson(json, SpreadSheet.class);
                 List<SpreadSheet.Entry> entries = Arrays.asList(spreadSheet.getFeed().getEntry());
                 ArrayList<String> strings = new ArrayList<>();
@@ -170,7 +169,6 @@ public class Converter {
         SpreadSheet newsheet = new SpreadSheet();
         newsheet.getFeed().setEntry(new SpreadSheet.Entry[max]);
         SpreadSheet.Entry[] newEntry = newsheet.getFeed().getEntry();
-
 
         // Initialize all values
         for (int x = 0; x < max; x++) {

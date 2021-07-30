@@ -1,7 +1,6 @@
-package converter;
+package com.josia.converter;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class Utils {
@@ -37,14 +36,23 @@ public class Utils {
     public static void writeToFile(Object object) {
         try {
             File f = new File("output.json");
+            boolean createdFile = true;
 
-            if (!f.exists()) f.createNewFile();
+            if (!f.exists()) {
+                createdFile = f.createNewFile();
+            }
 
-            FileWriter writer = new FileWriter(f);
-            writer.write((String) object);
-            writer.close();
+            if(createdFile) {
+                FileWriter writer = new FileWriter(f);
+                writer.write((String) object);
+                writer.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String createSpreadSheetUrl(String spreadsheetID, int page) {
+        return "https://spreadsheets.google.com/feeds/cells/" + spreadsheetID + "/" + page + "/public/full?alt=json";
     }
 }
