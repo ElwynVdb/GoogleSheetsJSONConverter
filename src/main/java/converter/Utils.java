@@ -11,10 +11,7 @@ public class Utils {
         try {
             URL URL = new URL(url);
             BufferedReader reader = new BufferedReader(new InputStreamReader(URL.openStream()));
-            String line = bufferedReaderToString(reader);
-            return line;
-        } catch (MalformedURLException e) {
-            System.out.println("Please define a valid URL");
+            return bufferedReaderToString(reader);
         } catch (IOException e) {
             System.out.println("Please define a valid URL");
         }
@@ -24,7 +21,7 @@ public class Utils {
 
     public static String bufferedReaderToString(BufferedReader e) {
         StringBuilder builder = new StringBuilder();
-        String line = "";
+        String line;
 
         try {
             while ((line = e.readLine()) != null) {
