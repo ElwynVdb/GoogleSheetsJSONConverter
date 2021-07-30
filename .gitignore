@@ -21,9 +21,10 @@
 
 
 .libs
+build
+.gradle
 out
 .idea
-gradle
 ./output.json
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml

@@ -12,20 +12,14 @@ repositories {
 }
 
 dependencies {
-    compile files (
-            "libs/json.jar",
-            "libs/gson.jar"
-    )
-}
 
-jar {
-    from zipTree("libs/json.jar")
-    from zipTree("libs/gson.jar")
 }
 
 dependencies {
   //  testCompile group: 'junit', name: 'junit', version: '4.12'
   //  compile group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
   //  compile group: 'org.json', name: 'json', version: '20180813'
+    implementation 'com.google.code.gson:gson:2.8.7'
+    implementation files('libs/json.jar')
 }
 
