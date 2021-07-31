@@ -16,7 +16,7 @@ dependencies {
 }
 
 dependencies {
-    implementation 'com.google.code.gson:gson:2.8.7'
+    implementation files('libs/gson.jar')
     implementation files('libs/json.jar')
 }
 
