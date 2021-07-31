@@ -50,7 +50,7 @@ public class Converter {
             default:
             case VALUE:
                 return createValueJson(spreadSheet);
-            case HORIZOONTAL_ARRAY:
+            case HORIZONTAL_ARRAY:
                 return createHorizontalJsonArray(spreadSheet);
             case VERTICAL_ARRAY:
                 return createVerticalJsonArray(spreadSheet);
