@@ -40,20 +40,18 @@ https://docs.google.com/spreadsheets/d/"SheetID"/edit#gid=0
 
 - Now open the jar file and put this into the text box and press "OK"
 
-![Input](https://imgur.com/E05945k.png)
+![Input](https://imgur.com/SZzv9Jr.png)
 
 # Output
 
-The project will automaticly create the following file in the directory:
+The project will automatically create the following file in the directory:
 ```json
 "output.json"
 ```
 
-
 # Information
 
 This project was inspired by this image from Google Sheets API:
-
 
 ![Inspired](https://imgur.com/F0VRwBz.png)
  
