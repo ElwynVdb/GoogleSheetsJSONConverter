@@ -4,6 +4,8 @@ This program can be used to convert any sheets with data to a JSON
 
 First you'll need a sheet like:
 
+(This project does no longer work due to an update google did!)
+
 ![Test Sheet](https://imgur.com/JpfNoeQ.png)
 
 The first row holds the keys for the json, Everything below are values
