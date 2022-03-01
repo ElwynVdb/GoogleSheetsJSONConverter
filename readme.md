@@ -1,10 +1,10 @@
 # Google Sheets to JSON
 
+(This project no longer works, this is due to V3 being deprecated, and no longer in use by google.)
+
 This program can be used to convert any sheets with data to a JSON
 
 First you'll need a sheet like:
-
-(This project does no longer work due to an update google did!)
 
 ![Test Sheet](https://imgur.com/JpfNoeQ.png)
 

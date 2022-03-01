@@ -9,7 +9,9 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/** @author Josia */
+/**
+ * @author Josia
+ */
 public class Converter {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -17,7 +19,7 @@ public class Converter {
     public static void main(String[] args) {
         String spreadSheetID = displayInputScreen();
 
-        if (spreadSheetID == null || spreadSheetID.length() == 0) {
+        if (spreadSheetID == null || spreadSheetID.isEmpty()) {
             displayErrorScreen("You have entered the wrong spreadsheetID", "Invalid spreadsheetID");
             return;
         }
@@ -32,7 +34,7 @@ public class Converter {
         Utils.writeToFile(finalJsonResult.toString(2));
     }
 
-    public static JSONArray getJSONArrayFromSpreadSheet(String spreadsheetID, int page, JSONReturnType jsonReturnType){
+    public static JSONArray getJSONArrayFromSpreadSheet(String spreadsheetID, int page, JSONReturnType jsonReturnType) {
         String rawSpreadsheetJson = Utils.getJsonFromURL(Utils.createSpreadSheetUrl(spreadsheetID, page));
         return Converter.convertSpreadsheetToJson(rawSpreadsheetJson, jsonReturnType);
     }
@@ -42,7 +44,7 @@ public class Converter {
         SpreadSheet spreadSheet = SpreadSheet.getFromJson(rawSpreadsheetJson);
 
         if (spreadSheet == null) {
-            displayErrorScreen("You have entered the wrong spreadsheetID", "Invalid spreadsheetID");
+            displayErrorScreen("This spreadsheet doesn't exist or isn't public", "Invalid spreadsheet");
             return null;
         }
 
@@ -59,22 +61,25 @@ public class Converter {
 
     private static JSONArray createValueJson(SpreadSheet spreadSheet) {
         List<String> keys = getKeys(spreadSheet);
-        SpreadSheet.Cell finalCell = spreadSheet.getFeed().getEntry()[spreadSheet.getFeed().getEntry().length - 1].getCell();
+        SpreadSheet.Cell finalCell = spreadSheet.getFeed().getEntry()[spreadSheet.getFeed().getEntry().length - 1]
+                .getCell();
+
         int finalRow = finalCell.getRow();
-        int totalCellCount = keys.size() * finalRow;
+        int keySize = keys.size();
+        int totalCellCount = keySize * finalRow;
 
         spreadSheet = fixEmptyFields(keys, totalCellCount, spreadSheet);
 
         JSONArray jsonArray = new JSONArray();
 
-        for (int i = 0; i < (totalCellCount / keys.size()); i++) {
+        for (int i = 0; i < (totalCellCount / keySize); i++) {
             if (i == 0) continue; // Ignore keys
 
             JSONObject jsonObject = new JSONObject();
 
             for (int j = 0; j < keys.size(); j++) {
                 String key = keys.get(j);
-                String content = spreadSheet.getFeed().getEntry()[(i * keys.size()) + j].getCell().getContent();
+                String content = spreadSheet.getFeed().getEntry()[(i * keySize) + j].getCell().getContent();
 
                 jsonObject.put(key, content);
             }
@@ -93,6 +98,7 @@ public class Converter {
             newSheet = new SpreadSheet();
             newSheet.getFeed().setEntry(new SpreadSheet.Entry[totalCellCount]);
             SpreadSheet.Entry[] newEntry = newSheet.getFeed().getEntry();
+            int keySize = keys.size();
 
             // Initialize
             for (int x = 0; x < totalCellCount; x++) {
@@ -104,7 +110,7 @@ public class Converter {
 
             for (SpreadSheet.Entry entry : feed.getEntry()) {
                 SpreadSheet.Cell cell = entry.getCell();
-                int placementPosition = (keys.size() * (cell.getRow() - 1)) + (cell.getColumn() - 1);
+                int placementPosition = (keySize * (cell.getRow() - 1)) + (cell.getColumn() - 1);
                 validPositions.add(placementPosition);
                 newEntry[placementPosition].getCell().copyCell(cell);
             }
@@ -118,8 +124,8 @@ public class Converter {
                 SpreadSheet.Cell cell = newEntry[j].getCell();
 
                 cell.copyCell(emptyCell);
-                cell.setRow(j / keys.size());
-                cell.setColumn(j - (j / keys.size()));
+                cell.setRow(j / keySize);
+                cell.setColumn(j - (j / keySize));
             }
         }
 
@@ -173,7 +179,8 @@ public class Converter {
     }
 
     private static String displayInputScreen() {
-        return JOptionPane.showInputDialog(null, "Enter spreadSheetID", "Spreadsheet to JSON", JOptionPane.INFORMATION_MESSAGE);
+        return JOptionPane.showInputDialog(null, "Enter spreadSheetID",
+                "Spreadsheet to JSON", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private static void displayErrorScreen(Object message, String title) {
